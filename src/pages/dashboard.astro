@@ -1,0 +1,539 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Voltx - Live Stream">
+  <main class="app-viewport" id="app-container">
+    
+    <header class="top-nav">
+      <div class="brand">
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linejoin="round" stroke-linecap="round"/>
+        </svg>
+        VOLTX<span>.</span>
+      </div>
+      
+      <div class="header-right">
+        <button class="btn-settings" id="open-settings-btn" title="Configurar Perfil">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+
+        <div class="status-pill">
+          <span class="pulse-dot" id="status-dot"></span>
+          <span id="connection-status">CONECTANDO...</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="modal-overlay hidden" id="settings-modal">
+      <div class="modal-card">
+        <h3>⚙️ CONFIGURACIÓN DE PERFIL</h3>
+        <p class="modal-subtitle">Personaliza cómo te verán los extraños en la red.</p>
+        
+        <div class="form-group">
+          <label for="input-username">Nombre de Usuario Único</label>
+          <input type="text" id="input-username" placeholder="Ej: VoltMaster" maxlength="15" />
+        </div>
+
+        <div class="form-group">
+          <label for="select-country">Tu País</label>
+          <select id="select-country">
+            <option value="🏳️|Global">🌍 Global / Oculto</option>
+            <option value="🇪🇸|España">🇪🇸 España</option>
+            <option value="🇲🇽|México">🇲🇽 México</option>
+            <option value="🇦🇷|Argentina">🇦🇷 Argentina</option>
+            <option value="🇨🇴|Colombia">🇨🇴 Colombia</option>
+            <option value="🇨🇱|Chile">🇨🇱 Chile</option>
+            <option value="🇵🇪|Perú">🇵🇪 Perú</option>
+            <option value="🇺🇸|Estados Unidos">🇺🇸 Estados Unidos</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="select-gender">Género</label>
+          <select id="select-gender">
+            <option value="unknown">👽 No especificar</option>
+            <option value="male">🙋‍♂️ Masculino</option>
+            <option value="female">🙋‍♀️ Femenino</option>
+          </select>
+        </div>
+
+        <button class="btn-save" id="save-settings-btn">GUARDAR Y ACTUALIZAR</button>
+      </div>
+    </div>
+
+    <section class="video-canvas">
+      <div class="video-slot stranger" id="slot-stranger">
+        <video id="remote-webcam" autoplay playsinline></video>
+        
+        <div class="radar-container" id="radar-loader">
+          <div class="radar-circle c1"></div>
+          <div class="radar-circle c2"></div>
+          <div class="radar-circle c3"></div>
+          <div class="radar-sweep"></div>
+          <p class="radar-text" id="radar-text">PULSA EMPEZAR</p>
+        </div>
+        <div class="info-overlay" id="stranger-tag">🚫 DESCONOCIDO</div>
+      </div>
+
+      <div class="video-slot local">
+        <video id="local-webcam" autoplay playsinline muted></video>
+        <div class="info-overlay" id="local-tag">TÚ (VISTA PREVIA)</div>
+        <div class="camera-off-msg" id="cam-off-msg">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1-2 2v3.34l1 1L23 7v10l-2.5-1.88M1 1l22 22"/>
+          </svg>
+          <span id="cam-error-text">CONECTANDO CÁMARA...</span>
+        </div>
+      </div>
+    </section>
+
+    <nav class="floating-controls">
+      <div class="control-group filters animate-slide-up">
+        <div class="select-box">
+          <select id="camera-select">
+            <option value="default">🔄 BUSCANDO FUENTES...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="control-group actions animate-slide-up-delay">
+        <button class="btn-icon active" id="toggle-mic">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 19v3M8 22h8"/></svg>
+        </button>
+        <button class="btn-icon active" id="toggle-cam">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        </button>
+        
+        <div class="divider"></div>
+
+        <button class="btn-main start" id="master-btn">
+          <span id="btn-text">EMPEZAR</span>
+        </button>
+
+        <button class="btn-next hidden" id="next-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+        </button>
+      </div>
+    </nav>
+  </main>
+</Layout>
+
+<script>
+  import { supabase } from '../lib/supabase';
+
+  // --- VARIABLES DE IDENTIDAD ---
+  let myId = Math.random().toString(36).substring(7);
+  let myUsername = "Volt_" + Math.floor(1000 + Math.random() * 9000);
+  let myCountry = "Global";
+  let myFlag = "🏳️";
+  let myGender = "unknown";
+
+  let isSearching = false;
+  let roomChannel: any = null;
+  const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+  let peerConnection: RTCPeerConnection | null = null;
+  let stream: MediaStream | null = null;
+  let camEnabled = true;
+  let micEnabled = true;
+
+  // Elementos DOM
+  const appContainer = document.getElementById('app-container');
+  const masterBtn = document.getElementById('master-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const btnText = document.getElementById('btn-text');
+  const statusText = document.getElementById('connection-status');
+  const statusDot = document.getElementById('status-dot');
+  const radarText = document.getElementById('radar-text');
+  const radarLoader = document.getElementById('radar-loader');
+  const localVideo = document.getElementById('local-webcam') as HTMLVideoElement;
+  const remoteVideo = document.getElementById('remote-webcam') as HTMLVideoElement;
+  const camOffMsg = document.getElementById('cam-off-msg');
+  const cameraSelect = document.getElementById('camera-select') as HTMLSelectElement;
+  const localTag = document.getElementById('local-tag');
+  const strangerTag = document.getElementById('stranger-tag');
+
+  // Elementos Modal
+  const openSettingsBtn = document.getElementById('open-settings-btn');
+  const settingsModal = document.getElementById('settings-modal');
+  const saveSettingsBtn = document.getElementById('save-settings-btn');
+  const inputUsername = document.getElementById('input-username') as HTMLInputElement;
+  const selectCountry = document.getElementById('select-country') as HTMLSelectElement;
+  const selectGender = document.getElementById('select-gender') as HTMLSelectElement;
+
+  // --- CONECTAR AL CANAL GLOBAL DE PRESENCIAS (CON FILTRADO ESTRICTO DE BUCLLES) ---
+  function initPresenceLobby() {
+    roomChannel = supabase.channel('voltx_lobby', {
+      config: { presence: { key: myId } }
+    });
+
+    roomChannel
+      .on('presence', { event: 'sync' }, () => {
+        const state = roomChannel.presenceState();
+        const users = Object.keys(state);
+        
+        // FILTRADO ESTRICTO: Ignora tu id y cualquier sesión duplicada con tu mismo nombre base
+        const strangers = users.filter(id => {
+          const userPresence = state[id]?.[0];
+          if (id === myId) return false;
+          if (!userPresence) return false;
+          
+          // Extrae el nombre base de tu nick quitándole números generados por el antiduplicado
+          const baseName = myUsername.split('_')[0].toLowerCase();
+          if (userPresence.username?.toLowerCase().includes(baseName)) return false;
+          
+          return true;
+        });
+        
+        if (isSearching && strangers.length > 0 && !peerConnection) {
+          const targetStrangerId = strangers[Math.floor(Math.random() * strangers.length)];
+          const strangerData = state[targetStrangerId]?.[0];
+          
+          if (strangerData && strangerTag) {
+            strangerTag.innerText = `${strangerData.flag} ${strangerData.username} (${strangerData.country.toUpperCase()})`;
+          }
+          initiateWebRTCCall(targetStrangerId);
+        }
+      })
+      .on('broadcast', { event: 'signal' }, (payload: any) => {
+        if (payload.userId === myId) return;
+        if (payload.offer && strangerTag && payload.userData) {
+          strangerTag.innerText = `${payload.userData.flag} ${payload.userData.username} (${payload.userData.country.toUpperCase()})`;
+        }
+        handleSignalMessage(payload);
+      });
+
+    roomChannel.subscribe();
+  }
+
+  // --- COMPROBACIÓN DE NICK ÚNICO Y LOCALSTORAGE ---
+  function loadProfile() {
+    const storedName = localStorage.getItem('voltx_name');
+    const storedCountryData = localStorage.getItem('voltx_country_data');
+    const storedGender = localStorage.getItem('voltx_gender');
+
+    if (storedName) myUsername = storedName;
+    if (storedCountryData) {
+      const parts = storedCountryData.split('|');
+      myFlag = parts[0]; myCountry = parts[1];
+    }
+    if (storedGender) myGender = storedGender;
+
+    if (inputUsername) inputUsername.value = myUsername;
+    if (selectCountry) selectCountry.value = `${myFlag}|${myCountry}`;
+    if (selectGender) selectGender.value = myGender;
+
+    updateLocalTag();
+  }
+
+  function saveProfile() {
+    if (inputUsername && inputUsername.value.trim() !== "") {
+      let desiredName = inputUsername.value.trim().replace(/\s+/g, '_');
+      
+      if (roomChannel) {
+        const state = roomChannel.presenceState();
+        const isNameTaken = Object.values(state).some((userPresence: any) => {
+          return userPresence[0]?.username?.toLowerCase() === desiredName.toLowerCase();
+        });
+
+        if (isNameTaken) {
+          alert("⚠️ Este nombre ya está en uso por alguien conectado. Añadiremos un código numérico.");
+          desiredName = desiredName + "_" + Math.floor(100 + Math.random() * 899);
+        }
+      }
+
+      myUsername = desiredName;
+      inputUsername.value = myUsername;
+      localStorage.setItem('voltx_name', myUsername);
+    }
+    
+    if (selectCountry) {
+      const parts = selectCountry.value.split('|');
+      myFlag = parts[0]; myCountry = parts[1];
+      localStorage.setItem('voltx_country_data', selectCountry.value);
+    }
+
+    if (selectGender) {
+      myGender = selectGender.value;
+      localStorage.setItem('voltx_gender', myGender);
+    }
+
+    updateLocalTag();
+    if (isSearching) publishPresence();
+  }
+
+  function updateLocalTag() {
+    if (localTag) localTag.innerText = `${myFlag} ${myUsername} (TÚ)`;
+  }
+
+  async function publishPresence() {
+    if (roomChannel) {
+      await roomChannel.track({
+        username: myUsername,
+        country: myCountry,
+        flag: myFlag,
+        gender: myGender,
+        online_at: new Date().toISOString()
+      });
+    }
+  }
+
+  openSettingsBtn?.addEventListener('click', () => settingsModal?.classList.remove('hidden'));
+  saveSettingsBtn?.addEventListener('click', () => { saveProfile(); settingsModal?.classList.add('hidden'); });
+  settingsModal?.addEventListener('click', (e) => { if (e.target === settingsModal) settingsModal.classList.add('hidden'); });
+
+  // --- HARDWARE MULTIMEDIA ---
+  async function initHardware(preferredId: string | null = null) {
+    try {
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(d => d.kind === 'videoinput');
+      const camo = videoDevices.find(d => d.label.toLowerCase().includes('camo') || d.label.toLowerCase().includes('virtual'));
+
+      const constraints = {
+        audio: true,
+        video: preferredId ? { deviceId: { exact: preferredId } } : (camo ? { deviceId: { exact: camo.deviceId } } : true)
+      };
+
+      stream = await navigator.mediaDevices.getUserMedia(constraints);
+      if (localVideo) { localVideo.srcObject = stream; localVideo.style.display = "block"; }
+      if (camOffMsg) camOffMsg.style.display = "none";
+      if (statusText) statusText.innerText = "SISTEMA LISTO";
+      fillCameraSelector(videoDevices);
+    } catch (e) {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+        if (localVideo) { localVideo.srcObject = stream; localVideo.style.display = "block"; }
+        if (camOffMsg) camOffMsg.style.display = "none";
+      } catch (err) {
+        if (statusText) statusText.innerText = "CONECTE SU DISPOSITIVO DE VÍDEO";
+      }
+    }
+  }
+
+  function fillCameraSelector(videoDevices: MediaDeviceInfo[]) {
+    if (!cameraSelect) return;
+    cameraSelect.innerHTML = "";
+    videoDevices.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d.deviceId; opt.text = d.label || "Cámara de Vídeo";
+      cameraSelect.add(opt);
+    });
+  }
+
+  cameraSelect?.addEventListener('change', (e) => initHardware((e.target as HTMLSelectElement).value));
+
+  window.addEventListener('DOMContentLoaded', () => {
+    initPresenceLobby();
+    loadProfile();
+    initHardware();
+  });
+
+  // --- FLUJO TRANSMISIÓN WebRTC (CON DOBLE SEGURO) ---
+  function setupPeerConnection() {
+    peerConnection = new RTCPeerConnection(rtcConfig);
+    stream?.getTracks().forEach(track => peerConnection?.addTrack(track, stream!));
+
+    peerConnection.ontrack = (event) => {
+      if (remoteVideo) {
+        remoteVideo.srcObject = event.streams[0];
+        remoteVideo.style.display = "block";
+      }
+      clearRadarUI();
+    };
+
+    peerConnection.onconnectionstatechange = () => {
+      if (peerConnection?.connectionState === 'connected') {
+        clearRadarUI();
+      }
+    };
+
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate && roomChannel) {
+        roomChannel.send({
+          type: 'broadcast',
+          event: 'signal',
+          candidate: event.candidate,
+          userId: myId
+        });
+      }
+    };
+  }
+
+  function clearRadarUI() {
+    if (radarLoader) radarLoader.style.display = "none";
+    if (statusText) statusText.innerText = "⚡ CONECTADO CON EXTRAÑO";
+  }
+
+  async function initiateWebRTCCall(targetId: string) {
+    setupPeerConnection();
+    const offer = await peerConnection!.createOffer();
+    await peerConnection!.setLocalDescription(offer);
+
+    roomChannel.send({
+      type: 'broadcast',
+      event: 'signal',
+      offer: offer,
+      userId: myId,
+      targetId: targetId,
+      userData: { username: myUsername, country: myCountry, flag: myFlag }
+    });
+  }
+
+  async function handleSignalMessage(payload: any) {
+    if (payload.offer && !peerConnection) {
+      setupPeerConnection();
+      await peerConnection!.setRemoteDescription(new RTCSessionDescription(payload.offer));
+      const answer = await peerConnection!.createAnswer();
+      await peerConnection!.setLocalDescription(answer);
+
+      roomChannel.send({
+        type: 'broadcast',
+        event: 'signal',
+        answer: answer,
+        userId: myId
+      });
+    } else if (payload.answer && peerConnection) {
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(payload.answer));
+    } else if (payload.candidate && peerConnection) {
+      await peerConnection.addIceCandidate(new RTCIceCandidate(payload.candidate));
+    }
+  }
+
+  function stopMatchmaking() {
+    if (peerConnection) { peerConnection.close(); peerConnection = null; }
+    if (remoteVideo) { remoteVideo.srcObject = null; remoteVideo.style.display = "none"; }
+    if (radarLoader) radarLoader.style.display = "flex";
+    if (strangerTag) strangerTag.innerText = "🚫 DESCONOCIDO";
+  }
+
+  // --- CONTROL DE BOTONES ---
+  masterBtn?.addEventListener('click', async () => {
+    if (!isSearching) {
+      if (roomChannel) {
+        const state = roomChannel.presenceState();
+        const duplicate = Object.values(state).some((userPresence: any) => {
+          return userPresence[0]?.username?.toLowerCase() === myUsername.toLowerCase();
+        });
+        if (duplicate) {
+          myUsername = myUsername + Math.floor(10 + Math.random() * 89);
+          localStorage.setItem('voltx_name', myUsername);
+          updateLocalTag();
+        }
+      }
+
+      isSearching = true;
+      appContainer?.classList.add('searching-mode');
+      masterBtn.classList.replace('start', 'pause');
+      if (btnText) btnText.innerText = "PAUSAR";
+      if (statusText) statusText.innerText = "BUSCANDO EN LA RED...";
+      if (radarText) radarText.innerText = "BUSCANDO PERSONAS...";
+      if (statusDot) { statusDot.style.background = "#f97316"; statusDot.style.boxShadow = "0 0 12px #f97316"; }
+      nextBtn?.classList.remove('hidden');
+      await publishPresence();
+    } else {
+      isSearching = false;
+      appContainer?.classList.remove('searching-mode');
+      masterBtn.classList.replace('pause', 'start');
+      if (btnText) btnText.innerText = "EMPEZAR";
+      if (statusText) statusText.innerText = "SISTEMA LISTO";
+      if (radarText) radarText.innerText = "PULSA EMPEZAR";
+      if (statusDot) { statusDot.style.background = "#22c55e"; statusDot.style.boxShadow = "0 0 12px #22c55e"; }
+      nextBtn?.classList.add('hidden');
+      if (roomChannel) roomChannel.untrack();
+      stopMatchmaking();
+    }
+  });
+
+  nextBtn?.addEventListener('click', async () => {
+    stopMatchmaking();
+    if (radarText) radarText.innerText = "SALTANDO...";
+    appContainer?.classList.add('skipping');
+    if (roomChannel) await roomChannel.untrack();
+    
+    setTimeout(async () => {
+      appContainer?.classList.remove('skipping');
+      if (radarText) radarText.innerText = "BUSCANDO EXTRAÑO...";
+      await publishPresence();
+    }, 800);
+  });
+
+  document.getElementById('toggle-cam')?.addEventListener('click', (e) => {
+    camEnabled = !camEnabled; stream?.getVideoTracks().forEach(t => t.enabled = camEnabled);
+    (e.currentTarget as HTMLButtonElement).classList.toggle('active', camEnabled);
+  });
+  document.getElementById('toggle-mic')?.addEventListener('click', (e) => {
+    micEnabled = !micEnabled; stream?.getAudioTracks().forEach(t => t.enabled = micEnabled);
+    (e.currentTarget as HTMLButtonElement).classList.toggle('active', micEnabled);
+  });
+</script>
+
+<style>
+  :global(body) { margin: 0; background-color: #030303; color: #ffffff; font-family: system-ui, sans-serif; overflow: hidden; }
+  .app-viewport { height: 100vh; display: flex; flex-direction: column; position: relative; }
+  
+  .top-nav { position: absolute; top: 0; left: 0; right: 0; padding: 1.5rem 2.5rem; display: flex; justify-content: space-between; align-items: center; z-index: 100; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
+  .brand { font-size: 1.4rem; font-weight: 900; display: flex; align-items: center; gap: 8px; }
+  .logo-icon { width: 24px; height: 24px; color: #00e5ff; filter: drop-shadow(0 0 8px #00e5ff); }
+  .brand span { color: #00e5ff; }
+  
+  .header-right { display: flex; align-items: center; gap: 15px; }
+  .btn-settings { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .btn-settings:hover { background: rgba(255,255,255,0.15); transform: rotate(30deg); }
+
+  .status-pill { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); padding: 0.6rem 1.2rem; border-radius: 14px; font-size: 0.75rem; font-weight: 700; border: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 10px; }
+  .pulse-dot { width: 6px; height: 6px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 10px #22c55e; }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 2000; display: flex; align-items: center; justify-content: center; transition: opacity 0.3s ease; }
+  .modal-card { background: #0d0d12; border: 1px solid rgba(255,255,255,0.1); width: 90%; max-width: 400px; padding: 2rem; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+  .modal-card h3 { margin: 0 0 0.5rem 0; font-size: 1.2rem; font-weight: 800; }
+  .modal-subtitle { color: #64748b; font-size: 0.8rem; margin-bottom: 1.5rem; }
+  
+  .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1.2rem; }
+  .form-group label { font-size: 0.75rem; font-weight: 700; color: #94a3b8; }
+  .form-group input, .form-group select { background: #161620; border: 1px solid rgba(255,255,255,0.08); padding: 12px; border-radius: 12px; color: #fff; font-size: 0.85rem; outline: none; }
+  .form-group input:focus, .form-group select:focus { border-color: #00e5ff; }
+  .btn-save { background: #fff; color: #000; border: none; width: 100%; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; }
+
+  /* CANVAS */
+  .video-canvas { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: #000; }
+  .video-slot { position: relative; background: #07070a; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  #remote-webcam { width: 100%; height: 100%; object-fit: cover; display: none; }
+  #local-webcam { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: none; }
+
+  .info-overlay { position: absolute; bottom: 140px; left: 25px; background: rgba(0,0,0,0.65); backdrop-filter: blur(15px); padding: 8px 16px; border-radius: 10px; font-size: 0.8rem; font-weight: 800; z-index: 10; border: 1px solid rgba(255,255,255,0.1); }
+
+  .radar-container { position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; }
+  .radar-circle { position: absolute; border: 1px solid rgba(0, 229, 255, 0.15); border-radius: 50%; }
+  .c1 { width: 100%; height: 100%; }
+  .c2 { width: 66%; height: 66%; }
+  .c3 { width: 33%; height: 33%; }
+  .radar-sweep { position: absolute; width: 50%; height: 50%; background: linear-gradient(45deg, rgba(0, 229, 255, 0.2) 0%, transparent 70%); transform-origin: bottom right; top: 0; left: 0; border-radius: 100% 0 0 0; display: none; }
+  .radar-text { position: absolute; bottom: -40px; font-size: 0.8rem; font-weight: 800; color: #475569; text-align: center; width: 200px; }
+
+  .searching-mode .radar-sweep { display: block; animation: radar-spin 2s linear infinite; }
+  .searching-mode .radar-text { color: #00e5ff; text-shadow: 0 0 8px rgba(0,229,255,0.5); }
+
+  .floating-controls { position: absolute; bottom: 35px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 14px; z-index: 1000; width: 90%; max-width: 550px; }
+  .control-group { background: rgba(10, 10, 12, 0.75); backdrop-filter: blur(30px); padding: 8px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center; gap: 8px; }
+  select { background: transparent; color: #94a3b8; border: none; font-size: 0.75rem; font-weight: 700; padding: 6px 4px; outline: none; cursor: pointer; }
+  
+  .btn-icon { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); color: #ef4444; width: 44px; height: 44px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .btn-icon.active { color: #94a3b8; }
+  .divider { width: 1px; height: 24px; background: rgba(255,255,255,0.1); margin: 0 4px; }
+
+  .btn-main { border: none; padding: 0 32px; height: 44px; border-radius: 14px; font-size: 0.85rem; font-weight: 800; cursor: pointer; }
+  .btn-main.start { background: #ffffff; color: #000; }
+  .btn-main.pause { background: #ff4747; color: #fff; }
+  
+  .btn-next { background: #ff7b00; border: none; color: white; width: 44px; height: 44px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .camera-off-msg { position: absolute; inset: 0; background: #050508; display: flex; flex-direction: column; gap: 15px; align-items: center; justify-content: center; color: #475569; font-size: 0.8rem; font-weight: 700; z-index: 5; }
+  .hidden { display: none !important; }
+
+  @keyframes radar-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  .skipping .video-slot.stranger { filter: brightness(2) blur(8px); transition: filter 0.4s ease; }
+  @media (max-width: 768px) { .video-canvas { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; } .floating-controls { bottom: 20px; transform: translateX(-50%) scale(0.9); } }
+</style>

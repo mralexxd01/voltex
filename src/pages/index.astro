@@ -1,0 +1,264 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Voltx - Conecta al instante">
+  <main class="login-container">
+    
+    <section class="intro-side">
+      <div class="overlay"></div>
+      <div class="intro-content">
+        <div class="logo">VOLTX</div>
+        <h1>Conecta con personas de todo el mundo al instante ⚡</h1>
+        <p>Pasa de pantalla, habla en directo y haz amigos de forma fluida y sin retrasos.</p>
+        
+        <div class="video-preview-mock">
+          <div class="live-tag">● EN DIRECTO</div>
+          <div class="user-counter">🔥 12,450 personas conectadas</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="auth-side">
+      <div class="auth-content">
+        <h2>Crea tu cuenta en Voltx</h2>
+        <p class="subtitle">Comienza a conocer gente en menos de 10 segundos</p>
+
+        <div class="social-buttons">
+          <button class="btn-social google" id="login-google">
+            <svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12.24 10.285V13.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l2.427-2.334C17.955 2.192 15.34 1 12.24 1 6.033 1 1 6.033 1 12.24s5.033 11.24 11.24 11.24c6.478 0 10.793-4.537 10.793-10.986 0-.743-.075-1.309-.172-1.768H12.24z"/></svg>
+            Continuar con Google
+          </button>
+
+          <button class="btn-social discord" id="login-discord">
+            <svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.873-.894a.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127a12.298 12.298 0 0 1-1.873.894a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.156-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.156 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.156-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.156 2.418z"/></svg>
+            Entrar con Discord
+          </button>
+
+          <button class="btn-social facebook" id="login-facebook">
+            <svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z"/></svg>
+            Entrar con Facebook
+          </button>
+        </div>
+
+        <p class="terms">
+          Al registrarte, aceptas nuestros Términos de Servicio y la Política de Privacidad. Al menos debes tener 18 años.
+        </p>
+      </div>
+    </section>
+
+  </main>
+</Layout>
+
+<script>
+  import { supabase } from '../lib/supabase';
+
+  // Configurar los clicks de los botones
+  document.getElementById('login-google')?.addEventListener('click', () => loginWithProvider('google'));
+  document.getElementById('login-discord')?.addEventListener('click', () => loginWithProvider('discord'));
+  document.getElementById('login-facebook')?.addEventListener('click', () => loginWithProvider('facebook'));
+
+  async function loginWithProvider(provider: 'google' | 'discord' | 'facebook') {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: provider,
+      options: {
+        // Redirige al usuario de vuelta a Voltx una vez logueado
+        redirectTo: window.location.origin + '/dashboard', 
+      }
+    });
+
+    if (error) {
+      alert("Error al conectar: " + error.message);
+    }
+  }
+</script>
+
+<style>
+  :global(body) {
+    margin: 0;
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: #0f172a;
+    color: #f8fafc;
+    overflow-x: hidden;
+  }
+
+  .login-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* --- ESTILOS IZQUIERDA (OMTV / OMEGLE STYLE) --- */
+  .intro-side {
+    flex: 1;
+    position: relative;
+    background: linear-gradient(135deg, #1e1b4b 0%, #311042 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+  }
+  
+  /* Un fondo con rejilla futurista */
+  .intro-side::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .intro-content {
+    position: relative;
+    z-index: 10;
+    max-width: 500px;
+  }
+
+  .logo {
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #38bdf8;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+  }
+
+  .intro-content h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    background: linear-gradient(to right, #ffffff, #93c5fd);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .intro-content p {
+    color: #94a3b8;
+    font-size: 1.1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  /* Simulación de Cámara Web */
+  .video-preview-mock {
+    width: 100%;
+    height: 240px;
+    background-color: #020617;
+    border-radius: 16px;
+    border: 2px solid #334155;
+    position: relative;
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5);
+    background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop'); /* Fondo abstracto aesthetic */
+    background-size: cover;
+    background-position: center;
+  }
+
+  .live-tag {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background-color: #ef4444;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 0.25rem 0.6rem;
+    border-radius: 9999px;
+    animation: pulse 2s infinite;
+  }
+
+  .user-counter {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    background-color: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(4px);
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* --- ESTILOS DERECHA (AUTH) --- */
+  .auth-side {
+    width: 450px;
+    background-color: #090d16;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem;
+    border-left: 1px solid #1e293b;
+  }
+
+  .auth-content {
+    width: 100%;
+  }
+
+  .auth-content h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .social-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .btn-social {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.85rem;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    color: white;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Colores de botones */
+  .google { background-color: #ffffff; color: #1e293b; }
+  .google:hover { background-color: #f1f5f9; transform: translateY(-2px); }
+
+  .discord { background-color: #5865F2; }
+  .discord:hover { background-color: #4752C4; transform: translateY(-2px); }
+
+  .facebook { background-color: #1877F2; }
+  .facebook:hover { background-color: #166FE5; transform: translateY(-2px); }
+
+  .terms {
+    color: #475569;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    margin-top: 2.5rem;
+    text-align: center;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* Responsivo para móviles */
+  @media (max-width: 850px) {
+    .login-container { flex-direction: column; height: auto; min-height: 100vh; }
+    .intro-side { padding: 2rem 1.5rem; }
+    .auth-side { width: 100%; box-sizing: border-box; border-left: none; border-top: 1px solid #1e293b; padding: 3rem 1.5rem; }
+  }
+</style>
